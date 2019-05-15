@@ -9,7 +9,7 @@ using Thesis_BIM_Website.Models;
 
 namespace Thesis_BIM_Website.Controllers
 {
-    [Authorize]
+    [Authorize(Policy = "CheckRole")]
     public class HomeController : Controller
     {
         public IActionResult Index()
