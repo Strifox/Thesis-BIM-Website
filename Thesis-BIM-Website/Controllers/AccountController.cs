@@ -88,11 +88,10 @@ namespace Thesis_BIM_Website.Controllers
                 client.BaseAddress = new Uri($"http://localhost:56171");
                 var result = await client.GetAsync($"/api/User/Login?username={username}&password={password}");
                 string resultContent = await result.Content.ReadAsStringAsync();
+                var json = JsonConvert.DeserializeObject<Dictionary<string, string>>(resultContent);
+                var decodedToken = json.First().Value;
                 if (resultContent != null)
                 {
-                    var json = JsonConvert.DeserializeObject<Dictionary<string, string>>(resultContent);
-                    var decodedToken = json.First().Value;
-
                 }
                 return decodedToken;
             }
