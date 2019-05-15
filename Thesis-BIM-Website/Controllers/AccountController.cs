@@ -3,17 +3,19 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Newtonsoft.Json;
 using Thesis_BIM_Website.Models;
 using Thesis_BIM_Website.Models.ViewModels;
 
 namespace Thesis_BIM_Website.Controllers
 {
-    public class AccountController : Controller
+    public class AccountController : Controller, IAuthorizationFilter
     {
         private static HttpClient client = new HttpClient();
         // GET: Account
@@ -45,6 +47,7 @@ namespace Thesis_BIM_Website.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
         {
+
             ViewData["ReturnUrl"] = returnUrl;
 
             var token = GetJwtClaim(await GetJwtToken(model.Username, model.Password));
@@ -52,13 +55,15 @@ namespace Thesis_BIM_Website.Controllers
             {
                 return View(model);
             }
-
             var user = new User
             {
                 Id = token.Claims.First(x => x.Type == "nameid").Value,
                 UserName = token.Claims.First(x => x.Type == "given_name").Value,
                 Email = token.Claims.First(x => x.Type == "email").Value,
+                Role = token.Claims.First(x => x.Type == "Role").Value,
             };
+
+
             return RedirectToLocal(returnUrl);
         }
 
@@ -90,9 +95,7 @@ namespace Thesis_BIM_Website.Controllers
                 string resultContent = await result.Content.ReadAsStringAsync();
                 var json = JsonConvert.DeserializeObject<Dictionary<string, string>>(resultContent);
                 var decodedToken = json.First().Value;
-                if (resultContent != null)
-                {
-                }
+
                 return decodedToken;
             }
         }
@@ -197,6 +200,11 @@ namespace Thesis_BIM_Website.Controllers
             {
                 return View();
             }
+        }
+
+        public void OnAuthorization(AuthorizationFilterContext context)
+        {
+            throw new NotImplementedException();
         }
     }
 }
