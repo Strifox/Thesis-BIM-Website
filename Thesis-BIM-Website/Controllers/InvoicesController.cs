@@ -1,108 +1,126 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Thesis_BIM_Website.Models;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using Thesis_BIM_Website.Data;
 
 namespace Thesis_BIM_Website.Controllers
 {
-    public class InvoicesController : Controller
+    [Route("api/[controller]")]
+    [ApiController]
+    public class InvoicesController : ControllerBase
     {
-        // GET: Invoices
-        public ActionResult Index()
+        private readonly ApplicationDbContext _context;
+
+        public InvoicesController(ApplicationDbContext context)
         {
-            return View();
+            _context = context;
         }
 
-        public async Task<ActionResult> GetInvoices(User user)
+        // GET: api/Invoices
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Invoice>>> GetInvoices()
         {
-            using (var client = new HttpClient())
+            return await _context.Invoices.ToListAsync();
+        }
+
+        // GET: api/Invoices/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Invoice>> GetInvoice(int id)
+        {
+            var invoice = await _context.Invoices.FindAsync(id);
+
+            if (invoice == null)
             {
-                client.BaseAddress = new Uri($"http://localhost:56171");
-
-                var result = await client.GetAsync($"/api/Invoices/GetAll/{user.Id}");
-                string resultContent = await result.Content.ReadAsStringAsync();
-                Console.WriteLine(resultContent);
-                return View(resultContent);
+                return NotFound();
             }
+
+            return invoice;
         }
 
-        // GET: Invoices/Details/5
-        public ActionResult Details(int id)
-        {
-            return View();
-        }
-
-        // GET: Invoices/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Invoices/Create
+        [Route("CreateInvoice")]
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<ActionResult<Invoice>> CreateInvoice(string userId, string companyName, long ocr, string bankaccountnumber, decimal amountToPay, DateTime paydate)
         {
+            var user = await _context.Users.Where(x => x.Id == userId).FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                return NotFound("That user does not exist");
+            }
+
+            var invoice = new Invoice { User = (User)user, CompanyName = companyName, Ocr = ocr, BankAccountNumber = bankaccountnumber, AmountToPay = amountToPay, Paydate = paydate };
+            _context.Add(invoice);
+            await _context.SaveChangesAsync();
+
+            var invoiceJson = JsonConvert.SerializeObject(invoice, Formatting.Indented, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+
+            return CreatedAtAction("CreateInvoice", invoiceJson);
+        }
+
+        // PUT: api/Invoices/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutInvoice(int id, Invoice invoice)
+        {
+            if (id != invoice.Id)
+            {
+                return BadRequest();
+            }
+
+            _context.Entry(invoice).State = EntityState.Modified;
+
             try
             {
-                // TODO: Add insert logic here
-
-                return RedirectToAction(nameof(Index));
+                await _context.SaveChangesAsync();
             }
-            catch
+            catch (DbUpdateConcurrencyException)
             {
-                return View();
+                if (!InvoiceExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
             }
+
+            return NoContent();
         }
 
-        // GET: Invoices/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
-
-        // POST: Invoices/Edit/5
+        // POST: api/Invoices
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public async Task<ActionResult<Invoice>> PostInvoice(Invoice invoice)
         {
-            try
-            {
-                // TODO: Add update logic here
+            _context.Invoices.Add(invoice);
+            await _context.SaveChangesAsync();
 
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            return CreatedAtAction("GetInvoice", new { id = invoice.Id }, invoice);
         }
 
-        // GET: Invoices/Delete/5
-        public ActionResult Delete(int id)
+        // DELETE: api/Invoices/5
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<Invoice>> DeleteInvoice(int id)
         {
-            return View();
+            var invoice = await _context.Invoices.FindAsync(id);
+            if (invoice == null)
+            {
+                return NotFound();
+            }
+
+            _context.Invoices.Remove(invoice);
+            await _context.SaveChangesAsync();
+
+            return invoice;
         }
 
-        // POST: Invoices/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        private bool InvoiceExists(int id)
         {
-            try
-            {
-                // TODO: Add delete logic here
-
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            return _context.Invoices.Any(e => e.Id == id);
         }
     }
 }

@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Thesis_BIM_Website.Models;
 
 namespace Thesis_BIM_Website.Controllers
 {
-    [Authorize(Policy = "CheckRole")]
     public class HomeController : Controller
     {
         public IActionResult Index()
