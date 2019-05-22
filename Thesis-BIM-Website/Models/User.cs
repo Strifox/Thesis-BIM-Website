@@ -1,9 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using System;
+﻿using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Thesis_BIM_Website.Models
 {
@@ -11,5 +8,8 @@ namespace Thesis_BIM_Website.Models
     {
         public List<Invoice> Invoices { get; set; }
         public string Role { get; set; }
+        [NotMapped]
+        public string Password { get; set; }
+        public string ExpoPushToken { get; set; }
     }
 }
