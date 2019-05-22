@@ -1,108 +1,153 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using Thesis_BIM_Website.Data;
 using Thesis_BIM_Website.Models;
 
 namespace Thesis_BIM_Website.Controllers
 {
     public class InvoicesController : Controller
     {
-        // GET: Invoices
-        public ActionResult Index()
+        private readonly ApplicationDbContext _context;
+
+        public InvoicesController(ApplicationDbContext context)
         {
-            return View();
+            _context = context;
         }
 
-        public async Task<ActionResult> GetInvoices(User user)
+        // GET: Invoices
+        public async Task<IActionResult> Index()
         {
-            using (var client = new HttpClient())
-            {
-                client.BaseAddress = new Uri($"http://localhost:56171");
-
-                var result = await client.GetAsync($"/api/Invoices/GetAll/{user.Id}");
-                string resultContent = await result.Content.ReadAsStringAsync();
-                Console.WriteLine(resultContent);
-                return View(resultContent);
-            }
+            return View(await _context.Invoices.ToListAsync());
         }
 
         // GET: Invoices/Details/5
-        public ActionResult Details(int id)
+        public async Task<IActionResult> Details(int? id)
         {
-            return View();
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var invoice = await _context.Invoices
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (invoice == null)
+            {
+                return NotFound();
+            }
+
+            return View(invoice);
         }
 
         // GET: Invoices/Create
-        public ActionResult Create()
+        public IActionResult Create()
         {
             return View();
         }
 
         // POST: Invoices/Create
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<IActionResult> Create([Bind("Id,CompanyName,AmountToPay,BankAccountNumber,Ocr,Paydate")] Invoice invoice)
         {
-            try
+            if (ModelState.IsValid)
             {
-                // TODO: Add insert logic here
-
+                _context.Add(invoice);
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            catch
-            {
-                return View();
-            }
+            return View(invoice);
         }
 
         // GET: Invoices/Edit/5
-        public ActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int? id)
         {
-            return View();
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var invoice = await _context.Invoices.FindAsync(id);
+            if (invoice == null)
+            {
+                return NotFound();
+            }
+            return View(invoice);
         }
 
         // POST: Invoices/Edit/5
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,CompanyName,AmountToPay,BankAccountNumber,Ocr,Paydate")] Invoice invoice)
         {
-            try
+            if (id != invoice.Id)
             {
-                // TODO: Add update logic here
+                return NotFound();
+            }
 
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(invoice);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!InvoiceExists(invoice.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
                 return RedirectToAction(nameof(Index));
             }
-            catch
-            {
-                return View();
-            }
+            return View(invoice);
         }
 
         // GET: Invoices/Delete/5
-        public ActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int? id)
         {
-            return View();
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var invoice = await _context.Invoices
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (invoice == null)
+            {
+                return NotFound();
+            }
+
+            return View(invoice);
         }
 
         // POST: Invoices/Delete/5
-        [HttpPost]
+        [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            try
-            {
-                // TODO: Add delete logic here
+            var invoice = await _context.Invoices.FindAsync(id);
+            _context.Invoices.Remove(invoice);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
 
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+        private bool InvoiceExists(int id)
+        {
+            return _context.Invoices.Any(e => e.Id == id);
         }
     }
 }
