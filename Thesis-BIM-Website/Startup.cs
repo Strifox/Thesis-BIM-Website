@@ -1,20 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Thesis_BIM_Website.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
-using Thesis_BIM_Website.Models;
 
 namespace Thesis_BIM_Website
 {
@@ -37,33 +35,16 @@ namespace Thesis_BIM_Website
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("CheckRole", policy => policy.Requirements.Add(new Roles("User")));
-            });
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(
+                    Configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddAuthentication(x =>
-            {
-                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-                .AddJwtBearer(options =>
-                {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateIssuerSigningKey = true,
-
-                        //Setup validate data
-                        ValidIssuer = "BIM",
-                        ValidAudience = "BIM",
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("VemVarDet,VemVarDetSomNäsa")),
-                    };
-                });
+            services.AddIdentity<IdentityUser, IdentityRole>()
+                          .AddDefaultUI(UIFramework.Bootstrap4)
+                          .AddEntityFrameworkStores<ApplicationDbContext>();
 
 
-            services.ConfigureApplicationCookie(options => options.LoginPath = "/Account/Login");
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
@@ -73,6 +54,7 @@ namespace Thesis_BIM_Website
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseDatabaseErrorPage();
             }
             else
             {
@@ -86,11 +68,12 @@ namespace Thesis_BIM_Website
             app.UseCookiePolicy();
 
             app.UseAuthentication();
+
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Account}/{action=Login}/{id?}");
+                    template: "{controller=Home}/{action=Index}/{id?}");
             });
         }
     }
