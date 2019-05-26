@@ -103,6 +103,7 @@ namespace Thesis_BIM_Website.Controllers
             {
                 try
                 {
+                    invoice.UserId = _userManager.GetUserId(HttpContext.User);
                     _context.Update(invoice);
                     await _context.SaveChangesAsync();
                 }

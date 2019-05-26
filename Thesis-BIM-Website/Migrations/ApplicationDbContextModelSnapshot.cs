@@ -220,8 +220,6 @@ namespace Thesis_BIM_Website.Migrations
 
                     b.Property<string>("ExpoPushToken");
 
-                    b.Property<string>("Role");
-
                     b.HasDiscriminator().HasValue("User");
                 });
 

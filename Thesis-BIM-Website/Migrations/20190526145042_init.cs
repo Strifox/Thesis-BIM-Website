@@ -42,7 +42,6 @@ namespace Thesis_BIM_Website.Migrations
                     LockoutEnabled = table.Column<bool>(nullable: false),
                     AccessFailedCount = table.Column<int>(nullable: false),
                     Discriminator = table.Column<string>(nullable: false),
-                    Role = table.Column<string>(nullable: true),
                     ExpoPushToken = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
