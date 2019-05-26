@@ -14,7 +14,6 @@ namespace Thesis_BIM_Website.Data
         {
         }
 
-
         public DbSet<Invoice> Invoices { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -26,9 +25,10 @@ namespace Thesis_BIM_Website.Data
                 inv.Property(x => x.AmountToPay).HasColumnType("decimal(15, 2)");
                 inv.Property(x => x.CompanyName).HasMaxLength(50);
                 inv.Property(x => x.BankAccountNumber).HasMaxLength(16);
+                inv.HasOne(x => x.User).WithMany(x => x.Invoices).HasForeignKey(x => x.UserId).IsRequired();
             });
 
-            builder.Entity<User>(user =>
+           builder.Entity<User>(user =>
             {
                 user.Property(x => x.UserName);
                 user.Property(x => x.PasswordHash);

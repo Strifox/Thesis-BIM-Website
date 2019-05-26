@@ -10,7 +10,7 @@ using Thesis_BIM_Website.Data;
 namespace Thesis_BIM_Website.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20190522180208_init")]
+    [Migration("20190526133137_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -206,7 +206,8 @@ namespace Thesis_BIM_Website.Migrations
 
                     b.Property<DateTime>("Paydate");
 
-                    b.Property<string>("UserId");
+                    b.Property<string>("UserId")
+                        .IsRequired();
 
                     b.HasKey("Id");
 
@@ -275,7 +276,8 @@ namespace Thesis_BIM_Website.Migrations
                 {
                     b.HasOne("Thesis_BIM_Website.Models.User", "User")
                         .WithMany("Invoices")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
         }
