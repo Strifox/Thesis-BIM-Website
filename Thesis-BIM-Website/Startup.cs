@@ -13,6 +13,9 @@ using Microsoft.EntityFrameworkCore;
 using Thesis_BIM_Website.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Authorization;
 
 namespace Thesis_BIM_Website
 {
@@ -36,16 +39,22 @@ namespace Thesis_BIM_Website
             });
 
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(
-                    Configuration.GetConnectionString("DefaultConnection")));
+            {
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+            });
 
             services.AddIdentity<IdentityUser, IdentityRole>()
                           .AddDefaultUI(UIFramework.Bootstrap4)
+                          .AddDefaultTokenProviders()
                           .AddEntityFrameworkStores<ApplicationDbContext>();
 
-
-
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddMvc(x =>
+           {
+               var policy = new AuthorizationPolicyBuilder()
+               .RequireAuthenticatedUser()
+               .Build();
+               x.Filters.Add(new AuthorizeFilter(policy));
+           }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

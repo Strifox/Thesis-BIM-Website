@@ -2,120 +2,156 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using Thesis_BIM_Website.Data;
+using Thesis_BIM_Website.Models;
 
 namespace Thesis_BIM_Website.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class InvoicesController : ControllerBase
+    public class InvoicesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        UserManager<IdentityUser> _userManager;
 
-        public InvoicesController(ApplicationDbContext context)
+        public InvoicesController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
-        // GET: api/Invoices
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Invoice>>> GetInvoices()
+        // GET: Invoices
+        public async Task<IActionResult> Index()
         {
-            return await _context.Invoices.ToListAsync();
+            return View(await _context.Invoices.Where(x => x.User.Id == _userManager.GetUserId(HttpContext.User)).ToListAsync());
         }
 
-        // GET: api/Invoices/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Invoice>> GetInvoice(int id)
+        // GET: Invoices/Details/5
+        public async Task<IActionResult> Details(int? id)
         {
-            var invoice = await _context.Invoices.FindAsync(id);
+            if (id == null)
+            {
+                return NotFound();
+            }
 
+            var invoice = await _context.Invoices
+                .Include(i => i.User)
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (invoice == null)
             {
                 return NotFound();
             }
 
-            return invoice;
+            return View(invoice);
         }
 
-        [Route("CreateInvoice")]
-        [HttpPost]
-        public async Task<ActionResult<Invoice>> CreateInvoice(string userId, string companyName, long ocr, string bankaccountnumber, decimal amountToPay, DateTime paydate)
+        // GET: Invoices/Create
+        public IActionResult Create()
         {
-            var user = await _context.Users.Where(x => x.Id == userId).FirstOrDefaultAsync();
+            return View();
+        }
 
-            if (user == null)
+        // POST: Invoices/Create
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("UserId,Id,CompanyName,AmountToPay,BankAccountNumber,Ocr,Paydate")] Invoice invoice)
+        {
+            if (ModelState.IsValid)
             {
-                return NotFound("That user does not exist");
+                invoice.UserId = _userManager.GetUserId(HttpContext.User);
+                _context.Add(invoice);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            return View(invoice);
+        }
+
+        // GET: Invoices/Edit/5
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
             }
 
-            var invoice = new Invoice { User = (User)user, CompanyName = companyName, Ocr = ocr, BankAccountNumber = bankaccountnumber, AmountToPay = amountToPay, Paydate = paydate };
-            _context.Add(invoice);
-            await _context.SaveChangesAsync();
-
-            var invoiceJson = JsonConvert.SerializeObject(invoice, Formatting.Indented, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
-
-            return CreatedAtAction("CreateInvoice", invoiceJson);
+            var invoice = await _context.Invoices.FindAsync(id);
+            if (invoice == null)
+            {
+                return NotFound();
+            }
+            ViewData["UserId"] = new SelectList(_context.Set<User>(), "Id", "Id", invoice.UserId);
+            return View(invoice);
         }
 
-        // PUT: api/Invoices/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutInvoice(int id, Invoice invoice)
+        // POST: Invoices/Edit/5
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("UserId,Id,CompanyName,AmountToPay,BankAccountNumber,Ocr,Paydate")] Invoice invoice)
         {
             if (id != invoice.Id)
             {
-                return BadRequest();
+                return NotFound();
             }
 
-            _context.Entry(invoice).State = EntityState.Modified;
-
-            try
+            if (ModelState.IsValid)
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!InvoiceExists(id))
+                try
                 {
-                    return NotFound();
+                    invoice.UserId = _userManager.GetUserId(HttpContext.User);
+                    _context.Update(invoice);
+                    await _context.SaveChangesAsync();
                 }
-                else
+                catch (DbUpdateConcurrencyException)
                 {
-                    throw;
+                    if (!InvoiceExists(invoice.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
                 }
+                return RedirectToAction(nameof(Index));
             }
-
-            return NoContent();
+            ViewData["UserId"] = new SelectList(_context.Set<User>(), "Id", "Id", invoice.UserId);
+            return View(invoice);
         }
 
-        // POST: api/Invoices
-        [HttpPost]
-        public async Task<ActionResult<Invoice>> PostInvoice(Invoice invoice)
+        // GET: Invoices/Delete/5
+        public async Task<IActionResult> Delete(int? id)
         {
-            _context.Invoices.Add(invoice);
-            await _context.SaveChangesAsync();
+            if (id == null)
+            {
+                return NotFound();
+            }
 
-            return CreatedAtAction("GetInvoice", new { id = invoice.Id }, invoice);
-        }
-
-        // DELETE: api/Invoices/5
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<Invoice>> DeleteInvoice(int id)
-        {
-            var invoice = await _context.Invoices.FindAsync(id);
+            var invoice = await _context.Invoices
+                .Include(i => i.User)
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (invoice == null)
             {
                 return NotFound();
             }
 
+            return View(invoice);
+        }
+
+        // POST: Invoices/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var invoice = await _context.Invoices.FindAsync(id);
             _context.Invoices.Remove(invoice);
             await _context.SaveChangesAsync();
-
-            return invoice;
+            return RedirectToAction(nameof(Index));
         }
 
         private bool InvoiceExists(int id)
