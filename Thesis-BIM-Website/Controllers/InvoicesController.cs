@@ -37,7 +37,7 @@ namespace Thesis_BIM_Website.Controllers
             }
 
             var invoice = await _context.Invoices
-                .Include(i => i.User)
+                .Where(x => x.Id == id)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (invoice == null)
             {
@@ -133,7 +133,7 @@ namespace Thesis_BIM_Website.Controllers
             }
 
             var invoice = await _context.Invoices
-                .Include(i => i.User)
+                .Where(x => x.Id == id)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (invoice == null)
             {
