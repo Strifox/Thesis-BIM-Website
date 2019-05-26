@@ -42,7 +42,6 @@ namespace Thesis_BIM_Website.Migrations
                     LockoutEnabled = table.Column<bool>(nullable: false),
                     AccessFailedCount = table.Column<int>(nullable: false),
                     Discriminator = table.Column<string>(nullable: false),
-                    Role = table.Column<string>(nullable: true),
                     ExpoPushToken = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
@@ -162,7 +161,7 @@ namespace Thesis_BIM_Website.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-                    UserId = table.Column<string>(nullable: true),
+                    UserId = table.Column<string>(nullable: false),
                     CompanyName = table.Column<string>(maxLength: 50, nullable: true),
                     AmountToPay = table.Column<decimal>(type: "decimal(15, 2)", nullable: false),
                     BankAccountNumber = table.Column<string>(maxLength: 16, nullable: true),
@@ -177,7 +176,7 @@ namespace Thesis_BIM_Website.Migrations
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(

@@ -204,7 +204,8 @@ namespace Thesis_BIM_Website.Migrations
 
                     b.Property<DateTime>("Paydate");
 
-                    b.Property<string>("UserId");
+                    b.Property<string>("UserId")
+                        .IsRequired();
 
                     b.HasKey("Id");
 
@@ -218,8 +219,6 @@ namespace Thesis_BIM_Website.Migrations
                     b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
 
                     b.Property<string>("ExpoPushToken");
-
-                    b.Property<string>("Role");
 
                     b.HasDiscriminator().HasValue("User");
                 });
@@ -273,7 +272,8 @@ namespace Thesis_BIM_Website.Migrations
                 {
                     b.HasOne("Thesis_BIM_Website.Models.User", "User")
                         .WithMany("Invoices")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
         }

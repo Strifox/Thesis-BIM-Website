@@ -39,14 +39,14 @@ namespace Thesis_BIM_Website
             });
 
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(
-                    Configuration.GetConnectionString("DefaultConnection")));
+            {
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+            });
 
             services.AddIdentity<IdentityUser, IdentityRole>()
                           .AddDefaultUI(UIFramework.Bootstrap4)
+                          .AddDefaultTokenProviders()
                           .AddEntityFrameworkStores<ApplicationDbContext>();
-
-
 
             services.AddMvc(x =>
            {
