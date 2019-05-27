@@ -28,7 +28,7 @@ namespace Thesis_BIM_Website.Controllers
         /// </summary>
         /// <returns></returns>
         [Route("Register")]
-        [HttpGet]
+        [HttpPost]
         public async Task<ActionResult<string>> Register([FromBody] User request)
         {
             IdentityResult roleResult;

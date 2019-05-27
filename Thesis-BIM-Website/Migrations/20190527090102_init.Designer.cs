@@ -10,7 +10,7 @@ using Thesis_BIM_Website.Data;
 namespace Thesis_BIM_Website.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20190526145042_init")]
+    [Migration("20190527090102_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
