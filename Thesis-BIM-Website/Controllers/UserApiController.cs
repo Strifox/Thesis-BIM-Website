@@ -27,9 +27,9 @@ namespace Thesis_BIM_Website.Controllers
         /// Creates a user
         /// </summary>
         /// <returns></returns>
-        [Route("createUser")]
+        [Route("Register")]
         [HttpGet]
-        public async Task<ActionResult<string>> CreateUser(string username, string password, string email, string pushToken)
+        public async Task<ActionResult<string>> Register([FromBody] User request)
         {
             IdentityResult roleResult;
             var roleCheck = await _roleManager.RoleExistsAsync("User");
@@ -39,19 +39,19 @@ namespace Thesis_BIM_Website.Controllers
                 roleResult = await _roleManager.CreateAsync(new IdentityRole("User"));
             }
 
-            if (_context.Users.Any(x => x.UserName == username))
+            if (_context.Users.Any(x => x.UserName == request.UserName))
             {
                 return Conflict(new { message = "There is already a user registered with that username" });
             }
-            if (_context.Users.Any(x => x.Email == email))
+            if (_context.Users.Any(x => x.Email == request.Email))
             {
                 return Conflict(new { message = "There is already a user registered with that email" });
             }
 
-            var user = new User { UserName = username, Email = email, ExpoPushToken = pushToken };
+            var user = new User { UserName = request.UserName, Email = request.Email, ExpoPushToken = request.ExpoPushToken };
 
             var result = await _userManager.CreateAsync(user
-            , password);
+            , request.Password);
             var setRole = await _userManager.AddToRoleAsync(user, "User");
 
             if (result.Succeeded)
