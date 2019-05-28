@@ -1,9 +1,12 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using Thesis_BIM_Website.Data;
 
 namespace Thesis_BIM_Website.Models
 {
@@ -11,11 +14,13 @@ namespace Thesis_BIM_Website.Models
     {
         private readonly IUserManagementService _userManagementService;
         private readonly TokenManagement _tokenManagement;
+        private readonly ApplicationDbContext _context;
 
-        public TokenAuthenticationService(IUserManagementService service, IOptions<TokenManagement> tokenManagement)
+        public TokenAuthenticationService(IUserManagementService service, IOptions<TokenManagement> tokenManagement, ApplicationDbContext context)
         {
             _userManagementService = service;
             _tokenManagement = tokenManagement.Value;
+            _context = context;
         }
         public bool IsAuthenticated(TokenRequest request, out string token)
         {
@@ -24,9 +29,11 @@ namespace Thesis_BIM_Website.Models
             if (!_userManagementService.IsValidUser(request.Username, request.Password))
                 return false;
 
+            var user = _context.Users.Where(x => x.UserName == request.Username).FirstOrDefault();
             var claim = new[]
             {
-                new Claim(ClaimTypes.Name, request.Username)
+                new Claim("userId", user.Id),
+                new Claim("username", request.Username)
             };
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_tokenManagement.Secret));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

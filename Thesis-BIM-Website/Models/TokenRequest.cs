@@ -5,10 +5,10 @@ namespace Thesis_BIM_Website.Models
 {
     public class TokenRequest
     {
+
         [Required]
         [JsonProperty("username")]
         public string Username { get; set; }
-
 
         [Required]
         [JsonProperty("password")]
