@@ -21,6 +21,8 @@ using Thesis_BIM_Website.Models;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Thesis_BIM_Website.Interfaces;
+using Thesis_BIM_Website.Services;
 
 namespace Thesis_BIM_Website
 {
@@ -47,26 +49,6 @@ namespace Thesis_BIM_Website
             {
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
             });
-
-            services.AddIdentity<IdentityUser, IdentityRole>()
-                          .AddDefaultUI(UIFramework.Bootstrap4)
-                          .AddDefaultTokenProviders()
-                          .AddEntityFrameworkStores<ApplicationDbContext>();
-
-            services.Configure<IdentityOptions>(options =>
-            {
-                options.Password.RequiredLength = 6;
-                options.Password.RequireNonAlphanumeric = false;
-            });
-
-            services.AddMvc(x =>
-           {
-               var policy = new AuthorizationPolicyBuilder()
-               .RequireAuthenticatedUser()
-               .Build();
-               x.Filters.Add(new AuthorizeFilter(policy));
-           }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
-
 
             //JWT Token
 
@@ -95,8 +77,32 @@ namespace Thesis_BIM_Website
                 };
             });
 
+            services.AddIdentity<IdentityUser, IdentityRole>()
+                          .AddDefaultUI(UIFramework.Bootstrap4)
+                          .AddDefaultTokenProviders()
+                          .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.Password.RequiredLength = 6;
+                options.Password.RequireNonAlphanumeric = false;
+            });
+
+            services.AddMvc(x =>
+           {
+               var policy = new AuthorizationPolicyBuilder()
+               .RequireAuthenticatedUser()
+               .Build();
+               x.Filters.Add(new AuthorizeFilter(policy));
+           }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+
+            //Login Dependency Injection
             services.AddScoped<IAuthenticateService, TokenAuthenticationService>();
             services.AddScoped<IUserManagementService, UserManagementService>();
+            //Invoice Dependency Injection
+            services.AddScoped<IInvoiceService, InvoiceService>();
+            services.AddScoped<IInvoiceManagementService, InvoiceManagementService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

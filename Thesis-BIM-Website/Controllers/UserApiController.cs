@@ -2,9 +2,11 @@
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Thesis_BIM_Website.Data;
+using Thesis_BIM_Website.Interfaces;
 using Thesis_BIM_Website.Models;
 
 namespace Thesis_BIM_Website.Controllers

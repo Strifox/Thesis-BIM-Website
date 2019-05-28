@@ -6,8 +6,8 @@ using Thesis_BIM_Website.Models;
 
 namespace Thesis_BIM_Website.Interfaces
 {
-    public interface IAuthenticateService
+    public interface IInvoiceService
     {
-        bool IsAuthenticated(TokenRequest request, out string token);
+        bool IsAuthenticated(InvoiceRequest request, out string token);
     }
 }
