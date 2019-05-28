@@ -53,6 +53,12 @@ namespace Thesis_BIM_Website
                           .AddDefaultTokenProviders()
                           .AddEntityFrameworkStores<ApplicationDbContext>();
 
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.Password.RequiredLength = 6;
+                options.Password.RequireNonAlphanumeric = false;
+            });
+
             services.AddMvc(x =>
            {
                var policy = new AuthorizationPolicyBuilder()

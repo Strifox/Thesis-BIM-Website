@@ -7,6 +7,8 @@ namespace Thesis_BIM_Website.Models
 {
     public class Invoice
     {
+        [NotMapped]
+        public string Base64String { get; set; }
         public virtual User User { get; set; }
         public string UserId { get; set; }
         public int Id { get; set; }

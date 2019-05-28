@@ -2,9 +2,6 @@
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Thesis_BIM_Website.Data;
@@ -38,13 +35,13 @@ namespace Thesis_BIM_Website.Controllers
         [HttpPost]
         public async Task<ActionResult<string>> Register([FromBody] User request)
         {
-            IdentityResult roleResult;
-            var roleCheck = await _roleManager.RoleExistsAsync("User");
-            if (!roleCheck)
-            {
-                //create the roles and seed them to the database
-                roleResult = await _roleManager.CreateAsync(new IdentityRole("User"));
-            }
+            //IdentityResult roleResult;
+            //var roleCheck = await _roleManager.RoleExistsAsync("User");
+            //if (!roleCheck)
+            //{
+            //    //create the roles and seed them to the database
+            //    roleResult = await _roleManager.CreateAsync(new IdentityRole("User"));
+            //}
 
             if (_context.Users.Any(x => x.UserName == request.UserName))
             {
@@ -59,12 +56,11 @@ namespace Thesis_BIM_Website.Controllers
 
             var result = await _userManager.CreateAsync(user
             , request.Password);
-            var setRole = await _userManager.AddToRoleAsync(user, "User");
 
             if (result.Succeeded)
-                return CreatedAtAction("CreateUser", new { user.Id, user.UserName, user.Email });
+                return CreatedAtAction("CreateUser", new { message = "User created" });
 
-            return Content("User creation failed");
+            return BadRequest(new { message = "User creation failed" });
         }
 
         /// <summary>
