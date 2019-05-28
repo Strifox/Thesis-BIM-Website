@@ -1,6 +1,7 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Thesis_BIM_Website.Data;
@@ -16,13 +17,14 @@ namespace Thesis_BIM_Website.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IAuthenticateService _authService;
 
-
-        public UserApiController(ApplicationDbContext context, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
+        public UserApiController(ApplicationDbContext context, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, IAuthenticateService authService)
         {
             _context = context;
             _userManager = userManager;
             _roleManager = roleManager;
+            _authService = authService;
         }
 
         /// <summary>
@@ -31,7 +33,7 @@ namespace Thesis_BIM_Website.Controllers
         /// <returns></returns>
         [Route("Register")]
         [HttpPost]
-        public async Task<ActionResult<string>> CreateUser([FromBody] User request)
+        public async Task<ActionResult<string>> Register([FromBody] User request)
         {
             //IdentityResult roleResult;
             //var roleCheck = await _roleManager.RoleExistsAsync("User");
@@ -59,6 +61,30 @@ namespace Thesis_BIM_Website.Controllers
                 return CreatedAtAction("CreateUser", new { message = "User created" });
 
             return BadRequest(new { message = "User creation failed" });
+        }
+
+        /// <summary>
+        /// Gets the user when you login
+        /// </summary>
+        /// <returns></returns>
+        [Route("Login")]
+        [HttpPost]
+        [AllowAnonymous]
+        [HttpPost]
+        public ActionResult RequestToken([FromBody] TokenRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            string token;
+            if (_authService.IsAuthenticated(request, out token))
+            {
+                return Ok(token);
+            }
+
+            return BadRequest("Invalid Request");
         }
     }
 }
