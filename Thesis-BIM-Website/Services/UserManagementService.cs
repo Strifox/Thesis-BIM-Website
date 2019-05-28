@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Thesis_BIM_Website.Interfaces;
 
-namespace Thesis_BIM_Website.Models
+namespace Thesis_BIM_Website.Services
 {
     public class UserManagementService : IUserManagementService
     {

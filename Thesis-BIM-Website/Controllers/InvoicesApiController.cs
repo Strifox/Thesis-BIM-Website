@@ -14,12 +14,14 @@ using Microsoft.ProjectOxford.Vision.Contract;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Thesis_BIM_Website.Data;
+using Thesis_BIM_Website.Interfaces;
 using Thesis_BIM_Website.Models;
+using Thesis_BIM_Website.Services;
 
 namespace Thesis_BIM_Website.Controllers
 {
-    [Route("api/[controller]")]
     [AllowAnonymous]
+    [Route("api/[controller]")]
     [ApiController]
     public class InvoicesApiController : ControllerBase
     {
@@ -33,25 +35,15 @@ namespace Thesis_BIM_Website.Controllers
         }
 
         // GET: api/Invoices
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Invoice>>> GetInvoices()
+        [Route("GetInvoices")]
+        [HttpPost]
+        public async Task<ActionResult<IEnumerable<Invoice>>> GetInvoices(string userId)
         {
-            return await _context.Invoices.ToListAsync();
+            var invoices = _context.Invoices.Where(x => x.UserId == userId).ToListAsync();
+
+            return Ok(await invoices);
         }
 
-        // GET: api/Invoices/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Invoice>> GetInvoice(int id)
-        {
-            var invoice = await _context.Invoices.FindAsync(id);
-
-            if (invoice == null)
-            {
-                return NotFound();
-            }
-
-            return invoice;
-        }
 
         [Route("AnalyzeImage")]
         [AllowAnonymous]
@@ -91,6 +83,19 @@ namespace Thesis_BIM_Website.Controllers
             var invoiceJson = JsonConvert.SerializeObject(invoice, Formatting.Indented, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
 
             return CreatedAtAction("CreateInvoice", invoiceJson);
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public ActionResult RequestToken([FromBody] TokenRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Invalid Request");
+            }
+
+            return Ok();
+
         }
 
         // PUT: api/Invoices/5
