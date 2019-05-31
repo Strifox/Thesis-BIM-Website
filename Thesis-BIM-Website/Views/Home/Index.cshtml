@@ -17,47 +17,20 @@
     }
     else
     {
-
-        <section class="page-section clearfix">
-            <div class="container">
-                <div class="intro">
-                    <img class="intro-img img-fluid mb-3 mb-lg-0 rounded" src="img/intro.jpg" alt="">
-                    <div class="intro-text left-0 text-center bg-faded p-5 rounded">
-                        <h2 class="section-heading mb-4">
-                            <span class="section-heading-upper">Forgot to pay your bill?</span>
-                            <span class="section-heading-lower">Afraid of missing the paydate?</span>
-                        </h2>
-                        <p class="mb-3">
-                            With BIM you will never forget an payment again. Create an invoice or manage your bills. Even better, you can also scan your invoice from our application and send it directly to our website.
-                        </p>
-                        @if (SignInManager.IsSignedIn(User))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="">Invoices</a>
-                            </li>
-                        }
-                        <div class="intro-button mx-auto">
-                            <a class="btn btn-primary btn-xl" asp-controller="Invoices" asp-action="Index">Try Us Today!</a>
-                        </div>
+        <!-- Masthead -->
+        <header class="masthead">
+            <div class="container h-100">
+                <div class="row h-100 align-items-center justify-content-center text-center">
+                    <div class="col-lg-10 align-self-end">
+                        <h1 class="text-uppercase text-white font-weight-bold">Afraid of missing the paydate?</h1>
+                        <hr class="divider my-4">
+                    </div>
+                    <div class="col-lg-8 align-self-baseline">
+                        <p class="text-white-75 font-weight-light mb-5">Do you always forget your payments? Don't worry, with BIM you will never forget an payment again. Create an invoice or manage your bills. You can also scan your invoice from our mobile application and send it directly to our website</p>
+                        <a class="btn btn-light btn-xl js-scroll-trigger" asp-controller="Invoices" asp-action="Index">Get Started here!</a>
                     </div>
                 </div>
             </div>
-        </section>
-        <section class="page-section cta">
-            <div class="container">
-                <div class="row">
-                    <div class="col-xl-9 mx-auto">
-                        <div class="cta-inner text-center rounded">
-                            <h2 class="section-heading mb-4">
-                                <span class="section-heading-upper">Our Promise</span>
-                                <span class="section-heading-lower">To You</span>
-                            </h2>
-                            <p class="mb-0"> When you use our service, you will be reminded on your phone when the paydate is due!</p>
-                            <p class="mb-0 font-weight-bold" style=""> Never forget your payments again.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+        </header>
     }
 </div>
