@@ -29,6 +29,7 @@ namespace Thesis_BIM_Website.Controllers
         const string subscriptionKey = "d2e3fa02640a41d482f7b399e6673579";
         const string uriBase =
         "https://westeurope.api.cognitive.microsoft.com/vision/v2.0/ocr";
+
         public InvoicesApiController(ApplicationDbContext context)
         {
             _context = context;
@@ -53,30 +54,34 @@ namespace Thesis_BIM_Website.Controllers
             if (!string.IsNullOrEmpty(invoice.Base64String) && !string.IsNullOrWhiteSpace(invoice.Base64String))
             {
                 var json = JsonConvert.DeserializeObject<OcrResults>(MakeOCRRequest(invoice.Base64String).Result);
-
                 var x = OcrResultsToString(json);
-
-                //return Ok(json);
-
 
                 return Ok(GetTextFromString(x));
             }
-
             return BadRequest(new { message = "Image can't be null" });
         }
 
         [Route("Create")]
         [HttpPost]
-        public async Task<ActionResult<Invoice>> CreateInvoice(string userId, string companyName, long ocr, string bankaccountnumber, decimal amountToPay, DateTime paydate)
+        public async Task<ActionResult<Invoice>> CreateInvoice([FromBody] Invoice input)
         {
-            var user = await _context.Users.Where(x => x.Id == userId).FirstOrDefaultAsync();
+            var user = await _context.Users.Where(x => x.Id == input.UserId).FirstOrDefaultAsync();
 
             if (user == null)
             {
                 return NotFound("That user does not exist");
             }
 
-            var invoice = new Invoice { User = (User)user, CompanyName = companyName, Ocr = ocr, BankAccountNumber = bankaccountnumber, AmountToPay = amountToPay, Paydate = paydate };
+            var invoice = new Invoice
+            {
+                User = (User)user,
+                CompanyName = input.CompanyName,
+                Ocr = input.Ocr,
+                BankAccountNumber = input.BankAccountNumber,
+                AmountToPay = input.AmountToPay,
+                Paydate = input.Paydate
+            };
+
             _context.Add(invoice);
             await _context.SaveChangesAsync();
 
@@ -159,6 +164,8 @@ namespace Thesis_BIM_Website.Controllers
             return _context.Invoices.Any(e => e.Id == id);
         }
 
+        [AllowAnonymous]
+        [HttpPost]
         static async Task<string> MakeOCRRequest(string base64string)
         {
             try
@@ -259,6 +266,9 @@ namespace Thesis_BIM_Website.Controllers
                     invoice.Paydate = date2;
                 }
             }
+
+            _context.Add(invoice);
+            _context.SaveChanges();
 
             return invoice;
         }
