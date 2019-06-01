@@ -4,51 +4,52 @@
     ViewData["Title"] = "Details";
 }
 
-<h1>Details</h1>
-
-<div>
-    <h4>Invoice</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.User)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.User.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CompanyName)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CompanyName)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.AmountToPay) SEK
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.AmountToPay) SEK
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.BankAccountNumber)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.BankAccountNumber)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Ocr)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Ocr)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Paydate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Paydate)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
-</div>
+<header class="masthead">
+        <div class="container h-100 " style="color: antiquewhite">
+            <h1>Details</h1>
+            <h4>Invoice</h4>
+            <hr />
+            <dl class="row">
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.User)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.User.Id)
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.CompanyName)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.CompanyName)
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.AmountToPay) SEK
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.AmountToPay) SEK
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.BankAccountNumber)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.BankAccountNumber)
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.Ocr)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.Ocr)
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.Paydate)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.Paydate)
+                </dd>
+            </dl>
+            <div>
+                @*<a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |*@
+                <a asp-action="Index">Back to List</a>
+            </div>
+        </div>
+</header>
