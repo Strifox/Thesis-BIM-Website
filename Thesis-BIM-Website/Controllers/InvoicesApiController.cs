@@ -20,7 +20,6 @@ using Thesis_BIM_Website.Services;
 
 namespace Thesis_BIM_Website.Controllers
 {
-    [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
     public class InvoicesApiController : ControllerBase
@@ -35,6 +34,19 @@ namespace Thesis_BIM_Website.Controllers
             _context = context;
         }
 
+        [AllowAnonymous]
+        [HttpPost]
+        public ActionResult RequestToken([FromBody] TokenRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Invalid Request");
+            }
+
+            return Ok();
+
+        }
+
         // GET: api/Invoices
         [Route("GetInvoices")]
         [HttpPost]
@@ -47,16 +59,16 @@ namespace Thesis_BIM_Website.Controllers
 
 
         [Route("AnalyzeImage")]
-        [AllowAnonymous]
         [HttpPost]
         public IActionResult AnalyzeImage([FromBody]Invoice invoice)
         {
             if (!string.IsNullOrEmpty(invoice.Base64String) && !string.IsNullOrWhiteSpace(invoice.Base64String))
             {
-                var json = JsonConvert.DeserializeObject<OcrResults>(MakeOCRRequest(invoice.Base64String).Result);
-                var x = OcrResultsToString(json);
+                string json = MakeComputerVisionRequest(invoice.Base64String).Result;
+                OcrResults result = JsonConvert.DeserializeObject<OcrResults>(json);
+                string sanitisedString = OcrResultsToString(result);
 
-                return Ok(GetTextFromString(x));
+                return Ok(InvoiceFromString(sanitisedString));
             }
             return BadRequest(new { message = "Image can't be null" });
         }
@@ -88,19 +100,6 @@ namespace Thesis_BIM_Website.Controllers
             var invoiceJson = JsonConvert.SerializeObject(invoice, Formatting.Indented, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
 
             return CreatedAtAction("CreateInvoice", invoiceJson);
-        }
-
-        [AllowAnonymous]
-        [HttpPost]
-        public ActionResult RequestToken([FromBody] TokenRequest request)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest("Invalid Request");
-            }
-
-            return Ok();
-
         }
 
         // PUT: api/Invoices/5
@@ -164,55 +163,40 @@ namespace Thesis_BIM_Website.Controllers
             return _context.Invoices.Any(e => e.Id == id);
         }
 
-        [AllowAnonymous]
+        /// <summary>
+        /// Makes an request to Azure Computer Vision
+        /// </summary>
+        /// <param name="base64string">Base64 encoded image</param>
+        /// <returns>Json string containing text and text boundries found in the image</returns>
         [HttpPost]
-        static async Task<string> MakeOCRRequest(string base64string)
+        private static async Task<string> MakeComputerVisionRequest(string base64string)
         {
             try
             {
                 HttpClient client = new HttpClient();
 
-                // Request headers.
                 client.DefaultRequestHeaders.Add(
                     "Ocp-Apim-Subscription-Key", subscriptionKey);
 
-                // Request parameters. 
-                // The language parameter doesn't specify a language, so the 
-                // method detects it automatically.
-                // The detectOrientation parameter is set to true, so the method detects and
-                // and corrects text orientation before detecting text.
                 string requestParameters = "language=unk";
 
-                // Assemble the URI for the REST API method.
                 string uri = uriBase + "?" + requestParameters;
 
                 HttpResponseMessage response;
 
-                // Read the contents of the specified local image
-                // into a byte array.
                 byte[] byteData = Convert.FromBase64String(base64string);
 
-                // Add the byte array as an octet stream to the request body.
                 using (ByteArrayContent content = new ByteArrayContent(byteData))
                 {
-                    // This example uses the "application/octet-stream" content type.
-                    // The other content types you can use are "application/json"
-                    // and "multipart/form-data".
                     content.Headers.ContentType =
                         new MediaTypeHeaderValue("application/octet-stream");
 
-                    // Asynchronously call the REST API method.
                     response = await client.PostAsync(uri, content);
                 }
 
-                // Asynchronously get the JSON response.
                 string contentString = await response.Content.ReadAsStringAsync();
 
                 return contentString;
-
-                // Display the JSON response.
-                //Console.WriteLine("\nResponse:\n\n{0}\n",
-                //	JToken.Parse(contentString).ToString());
             }
             catch (Exception e)
             {
@@ -220,40 +204,57 @@ namespace Thesis_BIM_Website.Controllers
             }
         }
 
-
-        public Invoice GetTextFromString(string input)
+        /// <summary>
+        /// Matches OCR-Number, AmountToPay and (Due date)* *if it's in the right format
+        /// </summary>
+        /// <param name="input">a string that only contains the text fields from the OcrResult object</param>
+        /// <returns>Invoice with Ocr-Number, AmountToPay and (Due date)* *if it's in the right format</returns>
+        private Invoice InvoiceFromString(string input)
         {
+            const string bankAccountNumberPattern = @"\b[\d]{3}-[\d]{4}\b";
+            const string ocrNumberAndAmountPattern = @"\b[\d]{10,16}\s[#\s]{0,2}[\d]{1,4}\s[\d]{2}\b";
+            const string dueDatePattern = @"\b[\d]{4}(-[\d]{2}){2}\b";
+            
             Invoice invoice = new Invoice();
-            var match = Regex.Match(input, @"\b[\d]{3}-[\d]{4}\b");
+
+            Match match = Regex.Match(input, bankAccountNumberPattern);
             if (match.Success)
             {
                 invoice.BankAccountNumber = match.Captures[0].Value;
             }
 
-            match = Regex.Match(input, @"\b[\d]{10,16}\s[#\s]{0,2}[\d]{1,4}\s[\d]{2}\b");
+            match = Regex.Match(input, ocrNumberAndAmountPattern);
 
             if (match.Success)
             {
-                string temp = match.Captures[0].Value.ToString();
+                string OcrAndAmount = match.Captures[0].Value;
 
-                Regex regex = new Regex(@"\s");
-                string[] sub = regex.Split(temp, 2);
+                string[] splitStrings;
 
-                if (temp.Contains('#'))
+                //If the computer vision does not find the # sign it will make a whitespace instead
+                if (OcrAndAmount.Contains('#'))
                 {
-                    sub = temp.Split('#');
+                    splitStrings = OcrAndAmount.Split('#');
+                }
+                else
+                {
+                    Regex regex = new Regex(@"\s");
+                    //We only want to split at the first occurance of a whitespace
+                    splitStrings = regex.Split(OcrAndAmount, 2);
                 }
 
-                string amountToPay = sub[1].Substring(0, sub[1].IndexOf(' ')).Trim() + "," + sub[1].Substring(sub[1].IndexOf(' ')).Trim();
+                string Ocr = splitStrings[0];
+                string amountToPay = splitStrings[1].Substring(0, splitStrings[1].IndexOf(' ')).Trim() + "," + splitStrings[1].Substring(splitStrings[1].IndexOf(' ')).Trim();
 
-                invoice.Ocr = Convert.ToInt64(sub[0]);
+                invoice.Ocr = Convert.ToInt64(Ocr);
                 invoice.AmountToPay = Convert.ToDecimal(amountToPay, new CultureInfo("sv-SE"));
             }
 
-            var matches = Regex.Matches(input, @"\b[\d]{4}(-[\d]{2}){2}\b");
+            var matches = Regex.Matches(input, dueDatePattern);
 
             if (matches.Count >= 2)
             {
+                //We don't know which date is the due date so we name them date1 and date2
                 DateTime date1 = DateTime.Parse(matches[0].Value);
                 DateTime date2 = DateTime.Parse(matches[1].Value);
 
@@ -267,13 +268,10 @@ namespace Thesis_BIM_Website.Controllers
                 }
             }
 
-            _context.Add(invoice);
-            _context.SaveChanges();
-
             return invoice;
         }
 
-        public string OcrResultsToString(OcrResults result)
+        private string OcrResultsToString(OcrResults result)
         {
             return string.Join("\n",
                 result.Regions.ToList().Select(region =>
