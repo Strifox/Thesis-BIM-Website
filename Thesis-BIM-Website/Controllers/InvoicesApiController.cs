@@ -49,6 +49,7 @@ namespace Thesis_BIM_Website.Controllers
         }
 
         // GET: api/Invoices
+        [AllowAnonymous]
         [Route("GetInvoices")]
         [HttpPost]
         public async Task<ActionResult<IEnumerable<Invoice>>> GetInvoices(string userId)
@@ -88,7 +89,7 @@ namespace Thesis_BIM_Website.Controllers
 
             var invoice = new Invoice
             {
-                User = (User)user,
+                User = user,
                 CompanyName = input.CompanyName,
                 Ocr = input.Ocr,
                 BankAccountNumber = input.BankAccountNumber,
@@ -229,6 +230,10 @@ namespace Thesis_BIM_Website.Controllers
                 {
                     invoice.Paydate = date2;
                 }
+            }
+            else
+            {
+                invoice.Paydate = null;
             }
 
             return invoice;

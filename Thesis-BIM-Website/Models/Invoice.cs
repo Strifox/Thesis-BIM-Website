@@ -25,7 +25,7 @@ namespace Thesis_BIM_Website.Models
         public long Ocr { get; set; }
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}")]
         [Display(Name = "Paydate")]
-        public DateTime Paydate { get; set; }
+        public DateTime? Paydate { get; set; }
 
     }
 }
