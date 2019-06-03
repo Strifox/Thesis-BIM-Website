@@ -73,6 +73,7 @@ namespace Thesis_BIM_Website.Controllers
             return BadRequest(new { message = "Image can't be null" });
         }
 
+        [AllowAnonymous]
         [Route("Create")]
         [HttpPost]
         public async Task<ActionResult<Invoice>> CreateInvoice([FromBody] Invoice input)
