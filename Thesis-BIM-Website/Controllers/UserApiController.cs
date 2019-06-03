@@ -70,7 +70,6 @@ namespace Thesis_BIM_Website.Controllers
         /// </summary>
         /// <returns></returns>
         [Route("Login")]
-        [HttpPost]
         [AllowAnonymous]
         [HttpPost]
         public ActionResult RequestToken([FromBody] TokenRequest request)
