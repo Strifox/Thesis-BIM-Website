@@ -20,6 +20,7 @@ using Thesis_BIM_Website.Services;
 
 namespace Thesis_BIM_Website.Controllers
 {
+    [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
     public class InvoicesApiController : ControllerBase
@@ -73,12 +74,12 @@ namespace Thesis_BIM_Website.Controllers
             return BadRequest(new { message = "Image can't be null" });
         }
 
-        [AllowAnonymous]
+        
         [Route("Create")]
         [HttpPost]
         public async Task<ActionResult<Invoice>> CreateInvoice([FromBody] Invoice input)
         {
-            var user = await _context.Users.Where(x => x.Id == input.UserId).FirstOrDefaultAsync();
+            User user = await _context.Users.Where(x => x.Id == input.UserId).FirstOrDefaultAsync();
 
             if (user == null)
             {
@@ -98,56 +99,17 @@ namespace Thesis_BIM_Website.Controllers
             _context.Add(invoice);
             await _context.SaveChangesAsync();
 
-            var invoiceJson = JsonConvert.SerializeObject(invoice, Formatting.Indented, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+            string invoiceJson = JsonConvert.SerializeObject(invoice, Formatting.Indented, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
 
-            return CreatedAtAction("CreateInvoice", invoiceJson);
+            return CreatedAtAction("CreateInvoice", new { message = "Invoice created" });
         }
 
-        // PUT: api/Invoices/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutInvoice(int id, Invoice invoice)
-        {
-            if (id != invoice.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(invoice).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!InvoiceExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/Invoices
-        [HttpPost]
-        public async Task<ActionResult<Invoice>> PostInvoice(Invoice invoice)
-        {
-            _context.Invoices.Add(invoice);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetInvoice", new { id = invoice.Id }, invoice);
-        }
 
         // DELETE: api/Invoices/5
         [HttpDelete("{id}")]
         public async Task<ActionResult<Invoice>> DeleteInvoice(int id)
         {
-            var invoice = await _context.Invoices.FindAsync(id);
+            Invoice invoice = await _context.Invoices.FindAsync(id);
             if (invoice == null)
             {
                 return NotFound();

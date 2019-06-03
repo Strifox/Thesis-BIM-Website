@@ -100,9 +100,6 @@ namespace Thesis_BIM_Website
             //Login Dependency Injection
             services.AddScoped<IAuthenticateService, TokenAuthenticationService>();
             services.AddScoped<IUserManagementService, UserManagementService>();
-            //Invoice Dependency Injection
-            services.AddScoped<IInvoiceService, InvoiceService>();
-            services.AddScoped<IInvoiceManagementService, InvoiceManagementService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

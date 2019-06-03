@@ -36,7 +36,7 @@ namespace Thesis_BIM_Website.Controllers
                 return NotFound();
             }
 
-            var invoice = await _context.Invoices
+            Invoice invoice = await _context.Invoices
                 .Where(x => x.Id == id)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (invoice == null)
@@ -78,7 +78,7 @@ namespace Thesis_BIM_Website.Controllers
                 return NotFound();
             }
 
-            var invoice = await _context.Invoices.FindAsync(id);
+            Invoice invoice = await _context.Invoices.FindAsync(id);
             if (invoice == null)
             {
                 return NotFound();
@@ -132,7 +132,7 @@ namespace Thesis_BIM_Website.Controllers
                 return NotFound();
             }
 
-            var invoice = await _context.Invoices
+            Invoice invoice = await _context.Invoices
                 .Where(x => x.Id == id)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (invoice == null)
@@ -148,7 +148,7 @@ namespace Thesis_BIM_Website.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var invoice = await _context.Invoices.FindAsync(id);
+            Invoice invoice = await _context.Invoices.FindAsync(id);
             _context.Invoices.Remove(invoice);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

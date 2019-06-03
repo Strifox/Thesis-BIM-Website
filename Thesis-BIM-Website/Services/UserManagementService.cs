@@ -13,7 +13,7 @@ namespace Thesis_BIM_Website.Services
         }
         public bool IsValidUser(string username, string password)
         {
-            var user = _userManager.FindByNameAsync(username).Result;
+            IdentityUser user = _userManager.FindByNameAsync(username).Result;
 
             if (_userManager.CheckPasswordAsync(user, password).Result)
             {

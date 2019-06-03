@@ -7,7 +7,7 @@ using Thesis_BIM_Website.Models;
 
 namespace Thesis_BIM_Website.Data
 {
-    public class ApplicationDbContext : IdentityDbContext
+    public class ApplicationDbContext : IdentityDbContext<User>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)

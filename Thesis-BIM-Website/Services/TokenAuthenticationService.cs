@@ -31,16 +31,16 @@ namespace Thesis_BIM_Website.Services
             if (!_userManagementService.IsValidUser(request.Username, request.Password))
                 return false;
 
-            var user = _context.Users.Where(x => x.UserName == request.Username).FirstOrDefault();
+            User user = _context.Users.Where(x => x.UserName == request.Username).FirstOrDefault();
             var claim = new[]
             {
                 new Claim("userId", user.Id),
                 new Claim("username", request.Username)
             };
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_tokenManagement.Secret));
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_tokenManagement.Secret));
+            SigningCredentials credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var jwtToken = new JwtSecurityToken(
+            JwtSecurityToken jwtToken = new JwtSecurityToken(
                 _tokenManagement.Issuer,
                 _tokenManagement.Audience,
                 claim,
