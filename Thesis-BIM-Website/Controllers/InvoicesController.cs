@@ -14,9 +14,9 @@ namespace Thesis_BIM_Website.Controllers
     public class InvoicesController : Controller
     {
         private readonly ApplicationDbContext _context;
-        UserManager<IdentityUser> _userManager;
+        UserManager<User> _userManager;
 
-        public InvoicesController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+        public InvoicesController(ApplicationDbContext context, UserManager<User> userManager)
         {
             _context = context;
             _userManager = userManager;

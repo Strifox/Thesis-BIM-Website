@@ -77,7 +77,7 @@ namespace Thesis_BIM_Website
                 };
             });
 
-            services.AddIdentity<IdentityUser, IdentityRole>()
+            services.AddIdentity<User, IdentityRole>()
                           .AddDefaultUI(UIFramework.Bootstrap4)
                           .AddDefaultTokenProviders()
                           .AddEntityFrameworkStores<ApplicationDbContext>();

@@ -17,11 +17,11 @@ namespace Thesis_BIM_Website.Controllers
     public class UserApiController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<User> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IAuthenticateService _authService;
 
-        public UserApiController(ApplicationDbContext context, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, IAuthenticateService authService)
+        public UserApiController(ApplicationDbContext context, UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IAuthenticateService authService)
         {
             _context = context;
             _userManager = userManager;
