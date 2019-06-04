@@ -51,7 +51,7 @@ namespace Thesis_BIM_Website.Controllers
         // GET: api/Invoices
         [AllowAnonymous]
         [Route("GetInvoices")]
-        [HttpPost]
+        [HttpGet]
         public async Task<ActionResult<IEnumerable<Invoice>>> GetInvoices(string userId)
         {
             var invoices = _context.Invoices.Where(x => x.UserId == userId).ToListAsync();
@@ -78,7 +78,7 @@ namespace Thesis_BIM_Website.Controllers
         
         [Route("Create")]
         [HttpPost]
-        public async Task<ActionResult<Invoice>> CreateInvoice([FromBody] Invoice input)
+        public async Task<ActionResult> CreateInvoice([FromBody] Invoice input)
         {
             User user = await _context.Users.Where(x => x.Id == input.UserId).FirstOrDefaultAsync();
 
@@ -99,8 +99,6 @@ namespace Thesis_BIM_Website.Controllers
 
             _context.Add(invoice);
             await _context.SaveChangesAsync();
-
-            string invoiceJson = JsonConvert.SerializeObject(invoice, Formatting.Indented, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
 
             return CreatedAtAction("CreateInvoice", new { message = "Invoice created" });
         }
@@ -175,8 +173,10 @@ namespace Thesis_BIM_Website.Controllers
         /// <returns>Invoice with Ocr-Number, AmountToPay and (Due date)* *if it's in the right format</returns>
         private Invoice InvoiceFromString(string input)
         {
-            const string bankAccountNumberPattern = @"\b[\d]{3}-[\d]{4}\b";
-            const string ocrNumberAndAmountPattern = @"\b[\d]{10,16}\s[#\s]{0,2}[\d]{1,4}\s[\d]{2}\b";
+            const string bankAccountNumberPattern = 
+                @"\b[\d]{3}-[\d]{4}\b";
+            const string ocrNumberAndAmountPattern = 
+                @"\b[\d]{10,16}\s[#\s]{0,2}[\d]{1,4}\s[\d]{2}\b";
             const string dueDatePattern = @"\b[\d]{4}(-[\d]{2}){2}\b";
             
             Invoice invoice = new Invoice();
@@ -207,8 +207,10 @@ namespace Thesis_BIM_Website.Controllers
                     splitStrings = regex.Split(OcrAndAmount, 2);
                 }
 
+                string kronor = splitStrings[1].Substring(0, splitStrings[1].IndexOf(' ')).Trim();
+                string öre = splitStrings[1].Substring(splitStrings[1].IndexOf(' ')).Trim();
                 string Ocr = splitStrings[0];
-                string amountToPay = splitStrings[1].Substring(0, splitStrings[1].IndexOf(' ')).Trim() + "," + splitStrings[1].Substring(splitStrings[1].IndexOf(' ')).Trim();
+                string amountToPay = kronor + "," + öre;
 
                 invoice.Ocr = Convert.ToInt64(Ocr);
                 invoice.AmountToPay = Convert.ToDecimal(amountToPay, new CultureInfo("sv-SE"));
@@ -235,7 +237,6 @@ namespace Thesis_BIM_Website.Controllers
             {
                 invoice.Paydate = null;
             }
-
             return invoice;
         }
 

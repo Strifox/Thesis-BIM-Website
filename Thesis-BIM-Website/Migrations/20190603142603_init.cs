@@ -41,7 +41,6 @@ namespace Thesis_BIM_Website.Migrations
                     LockoutEnd = table.Column<DateTimeOffset>(nullable: true),
                     LockoutEnabled = table.Column<bool>(nullable: false),
                     AccessFailedCount = table.Column<int>(nullable: false),
-                    Discriminator = table.Column<string>(nullable: false),
                     ExpoPushToken = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
@@ -166,7 +165,7 @@ namespace Thesis_BIM_Website.Migrations
                     AmountToPay = table.Column<decimal>(type: "decimal(15, 2)", nullable: false),
                     BankAccountNumber = table.Column<string>(maxLength: 16, nullable: true),
                     Ocr = table.Column<long>(nullable: false),
-                    Paydate = table.Column<DateTime>(nullable: false)
+                    Paydate = table.Column<DateTime>(nullable: true)
                 },
                 constraints: table =>
                 {
